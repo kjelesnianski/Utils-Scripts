@@ -158,7 +158,7 @@ UNIQUE_LIBS=(`cat $TPATH/allLIBS_2.txt`)
 for i in "${UNIQUE_LIBS[@]}"
 do
 	# echo the LIB name
-	echo $i ;
+	#echo $i ;
 
 	# PART 1
 	# Derive number of FUNC symbols (remove UNDEFINED symbols)
@@ -188,6 +188,18 @@ echo "Total Library  Count:$L_COUNTER"
 echo "Total Function Count:$F_COUNTER"
 echo "Total Callsite Count:$C_COUNTER"
 
+
+echo "------- PART 2A Idle system profiling - memory savings"
+UNIQUE_LIBS=(`cat $TPATH/allLIBS_2.txt`)
+for i in "${UNIQUE_LIBS[@]}"
+do
+	#echo Lib name
+	#echo $i;
+	#See if any symbolic links
+	ll $i | cut -d' ' -f 5
+	#Get element 5 for file size
+
+done
 
 # Below is pseudo block comment END
 #END
