@@ -119,11 +119,13 @@ P_COUNTER=0;
 L_COUNTER=0;
 F_COUNTER=0; 
 C_COUNTER=0;
+PC_REL_COUNTER=0;
 
 echo "Pcount:$P_COUNTER"
 echo "Lcount:$L_COUNTER"
 echo "Fcount:$F_COUNTER"
 echo "Ccount:$C_COUNTER"
+echo "Ccount:$PC_REL_COUNTER"
 
 # Go to /proc directory
 cd /proc ;
@@ -135,12 +137,15 @@ find -maxdepth 1 | awk '/[0-9]$/' | tee $TPATH/allPID.txt
 } &> /dev/null
 echo "- Got all PID"
 
+PID_W_LIB_COUNT=0;
+LIB_COUNT=0;
+
 # For each PID
 ARRAY=(`cat $TPATH/allPID.txt`)
 for i in "${ARRAY[@]}"
 do
 	# echo th PID
-	# echo $i ;
+	echo $i; 
 	# Debug to see libs per PID
 	#echo $i | tee -a /home/kjelesnianski/util_scripts/allLIBS.txt ;
 	# Print PID/maps 
@@ -152,7 +157,22 @@ do
 	cat $i/maps | cut -d' ' -f 26 | awk NF | grep "\.so" | awk '!seen[$0]++' \
 		| tee -a $TPATH/allLIBS.txt
 	} &> /dev/null
+
+
+	CURR_PID_W_LIB=$(cat $i/maps | cut -d' ' -f 26 | awk NF | grep "\.so" | awk '!seen[$0]++' \
+		| wc -l)
+	if [[ $CURR_PID_W_LIB -gt 0 ]]
+	then
+		echo "LIBS with this PID:$CURR_PID_W_LIB"
+		LIB_COUNT=$(( $LIB_COUNT + $CURR_PID_W_LIB ))
+		PID_W_LIB_COUNT=$(( $PID_W_LIB_COUNT + 1 ))
+	fi
+
 done
+
+echo "Total number of Libs attached to PIDs	:$LIB_COUNT"
+echo "Number of PIDs with LIBS			:$PID_W_LIB_COUNT"
+echo ""
 echo "- Got all unique LIB per PID"
 
 # Trim Lib file some more
@@ -197,6 +217,10 @@ do
 	CURR_C_COUNTER=$(objdump -d $i | awk '/callq/' | wc -l)
 	# add to running counter
 	C_COUNTER=$(($C_COUNTER + $CURR_C_COUNTER))
+
+	# Part 3 - PC relative asm counter
+	CURR_PCR_COUNTER=$(objdump -d $i | awk '/\%rip/' | wc -l)
+	PC_REL_COUNTER=$(($PC_REL_COUNTER + $CURR_PCR_COUNTER))
 done
 
 P_COUNTER=$(cat $TPATH/allPID.txt | wc -l)
@@ -205,6 +229,7 @@ echo "Total Process  Count:$P_COUNTER"
 echo "Total Library  Count:$L_COUNTER"
 echo "Total Function Count:$F_COUNTER"
 echo "Total Callsite Count:$C_COUNTER"
+echo "Total PC Relative Instr Count:$PC_REL_COUNTER"
 
 # Below is pseudo block comment END
 #END
