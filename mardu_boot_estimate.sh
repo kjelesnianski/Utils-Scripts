@@ -17,8 +17,7 @@
 # About making block comment: https://stackoverflow.com/questions/947897/block-comments-in-a-shell-script
 # About doing math in bash: https://unix.stackexchange.com/questions/55069/how-to-add-arithmetic-variables-in-a-scripit
 #
-#
-#
+# NOTE: NOT ALL LEA instructions use %RIP!!!! Those are NOT PC-relative!
 #
 
 # Author: K Jski
@@ -50,10 +49,12 @@ cat maps | cut -d' ' -f 26 | awk NF | grep "\.so" | sort | uniq \
 #L_counter - library counter
 #F_counter - function counter
 #C_counter - callsite counter
+#PC_REL_COUNTER - pc-relative instruction counter (instructions using %rip)
 P_COUNTER=0;
 L_COUNTER=0;
 F_COUNTER=0; 
 C_COUNTER=0;
+PC_REL_COUNTER=0;
 
 L_COUNTER=$(cat $TPATH/systemd-libs.txt | wc -l)
 echo "systemd Num Libs:$L_COUNTER"
@@ -87,11 +88,21 @@ do
 	CURR_C_COUNTER=$(objdump -d $i | awk '/callq/' | wc -l)
 	# add to running counter
 	C_COUNTER=$(($C_COUNTER + $CURR_C_COUNTER))
+
+	# Part 3 - PC relative asm counter
+	CURR_PCR_COUNTER=$(objdump -d $i | awk '/\%rip/' | wc -l)
+	PC_REL_COUNTER=$(($PC_REL_COUNTER + $CURR_PCR_COUNTER))
+	# Part 3A - LEA only asm counter
+	#LEA_COUNTER=0;
+	#CURR_LEA_COUNTER=$(objdump -d $i | awk '/lea  /' | wc -l)
+	#LEA_COUNTER=$(($LEA_COUNTER + $CURR_LEA_COUNTER))
 done
 
 echo "Total Library  Count:$L_COUNTER"
 echo "Total Function Count:$F_COUNTER"
 echo "Total Callsite Count:$C_COUNTER"
+echo "Total PC Relative Instr Count:$PC_REL_COUNTER"
+#echo "Total LEA Instr Count        :$LEA_COUNTER"
 echo "------- PART 1A END"
 
 
