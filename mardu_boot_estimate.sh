@@ -46,9 +46,11 @@ cat maps | cut -d' ' -f 26 | awk NF | grep "\.so" | sort | uniq \
 	| tee $TPATH/systemd-libs.txt
 } &> /dev/null
 
+#P_counter - process counter
 #L_counter - library counter
 #F_counter - function counter
 #C_counter - callsite counter
+P_COUNTER=0;
 L_COUNTER=0;
 F_COUNTER=0; 
 C_COUNTER=0;
@@ -99,15 +101,15 @@ echo "------- PART 1A END"
 #--------------------------------------------------------------------
 ### For ALL processes current active on machine
 #--------------------------------------------------------------------
-# Below is pseudo block comment START
-#: <<'END'
-
 
 echo "------- PART 2 Idle system profiling"
 
+P_COUNTER=0;
 L_COUNTER=0;
 F_COUNTER=0; 
 C_COUNTER=0;
+
+echo "Pcount:$P_COUNTER"
 echo "Lcount:$L_COUNTER"
 echo "Fcount:$F_COUNTER"
 echo "Ccount:$C_COUNTER"
@@ -154,6 +156,9 @@ cat $TPATH/allLIBS.txt | awk '!seen[$0]++' \
 # Result is ALL unique libraries used by 'idle' system
 echo "- Got all unique LIB"
 
+# Below is pseudo block comment START
+#: <<'END'
+
 UNIQUE_LIBS=(`cat $TPATH/allLIBS_2.txt`)
 for i in "${UNIQUE_LIBS[@]}"
 do
@@ -183,23 +188,30 @@ do
 	C_COUNTER=$(($C_COUNTER + $CURR_C_COUNTER))
 done
 
-L_COUNTER=$(cat $TPATH/allLIBS_2.txt| wc -l)
+P_COUNTER=$(cat $TPATH/allPID.txt | wc -l)
+L_COUNTER=$(cat $TPATH/allLIBS_2.txt | wc -l)
+echo "Total Process  Count:$P_COUNTER"
 echo "Total Library  Count:$L_COUNTER"
 echo "Total Function Count:$F_COUNTER"
 echo "Total Callsite Count:$C_COUNTER"
 
+# Below is pseudo block comment END
+#END
 
 echo "------- PART 2A Idle system profiling - memory savings"
+MEM_COUNTER=0;
+
 UNIQUE_LIBS=(`cat $TPATH/allLIBS_2.txt`)
 for i in "${UNIQUE_LIBS[@]}"
 do
 	#echo Lib name
 	#echo $i;
-	#See if any symbolic links
-	ll $i | cut -d' ' -f 5
 	#Get element 5 for file size
+	{
+	CURR_MEM_SIZE=$(ls -l $i | cut -d' ' -f 5)
+	} &> /dev/null
 
+	MEM_COUNTER=$(($MEM_COUNTER + $CURR_MEM_SIZE))
 done
 
-# Below is pseudo block comment END
-#END
+echo "Total Size of all currently used Libs:$MEM_COUNTER"
