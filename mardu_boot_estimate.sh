@@ -131,7 +131,6 @@ echo "Ccount:$PC_REL_COUNTER"
 cd /proc ;
 # Find all directorys of depth 1
 # | that are a number
-#ARRAY=('find -maxdepth 1 | awk '/[0-9]$/' ')
 {
 find -maxdepth 1 | awk '/[0-9]$/' | tee $TPATH/allPID.txt
 } &> /dev/null
@@ -145,7 +144,6 @@ ARRAY=(`cat $TPATH/allPID.txt`)
 for i in "${ARRAY[@]}"
 do
 	# echo th PID
-	echo $i; 
 	# Debug to see libs per PID
 	#echo $i | tee -a /home/kjelesnianski/util_scripts/allLIBS.txt ;
 	# Print PID/maps 
@@ -163,7 +161,8 @@ do
 		| wc -l)
 	if [[ $CURR_PID_W_LIB -gt 0 ]]
 	then
-		echo "LIBS with this PID:$CURR_PID_W_LIB"
+		#echo $i; 
+		#echo "LIBS with this PID:$CURR_PID_W_LIB"
 		LIB_COUNT=$(( $LIB_COUNT + $CURR_PID_W_LIB ))
 		PID_W_LIB_COUNT=$(( $PID_W_LIB_COUNT + 1 ))
 	fi
@@ -174,6 +173,15 @@ echo "Total number of Libs attached to PIDs	:$LIB_COUNT"
 echo "Number of PIDs with LIBS			:$PID_W_LIB_COUNT"
 echo ""
 echo "- Got all unique LIB per PID"
+
+
+
+echo "-------------------"
+echo "--- Specific Library statistics"
+awk 'NF{ count[ toupper( $0 ) ]++}
+    END{ for ( name in count ) { print name " appears " count[ name ] " times" };
+}' $TPATH/allLIBS.txt | sort
+echo "-------------------"
 
 # Trim Lib file some more
 # cat Open allLIBS file
