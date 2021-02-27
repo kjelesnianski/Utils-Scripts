@@ -16,10 +16,17 @@
 # About saving terminal line output: https://askubuntu.com/questions/420981/how-do-i-save-terminal-output-to-a-file
 # About making block comment: https://stackoverflow.com/questions/947897/block-comments-in-a-shell-script
 # About doing math in bash: https://unix.stackexchange.com/questions/55069/how-to-add-arithmetic-variables-in-a-scripit
+# About counting occurance: https://stackoverflow.com/questions/8969879/count-the-occurrence-of-a-string-in-an-input-file
+# About variable recycling: https://unix.stackexchange.com/questions/312280/split-string-by-delimiter-and-get-n-th-element
+#
+#
+#
+#
+#
 #
 # NOTE: NOT ALL LEA instructions use %RIP!!!! Those are NOT PC-relative!
 #
-
+#
 # Author: K Jski
 # Email : kjski@vt.edu
 # Date  : 2/25/21
@@ -121,11 +128,11 @@ F_COUNTER=0;
 C_COUNTER=0;
 PC_REL_COUNTER=0;
 
-echo "Pcount:$P_COUNTER"
-echo "Lcount:$L_COUNTER"
-echo "Fcount:$F_COUNTER"
-echo "Ccount:$C_COUNTER"
-echo "Ccount:$PC_REL_COUNTER"
+#echo "Pcount:$P_COUNTER"
+#echo "Lcount:$L_COUNTER"
+#echo "Fcount:$F_COUNTER"
+#echo "Ccount:$C_COUNTER"
+#echo "Ccount:$PC_REL_COUNTER"
 
 # Go to /proc directory
 cd /proc ;
@@ -178,9 +185,56 @@ echo "- Got all unique LIB per PID"
 
 echo "-------------------"
 echo "--- Specific Library statistics"
-awk 'NF{ count[ toupper( $0 ) ]++}
+
+# Records occurance of each lib
+{
+awk 'NF{ count[ $0 ]++}
     END{ for ( name in count ) { print name " appears " count[ name ] " times" };
-}' $TPATH/allLIBS.txt | sort
+}' $TPATH/allLIBS.txt | sort | tee $TPATH/lib_occurance.txt
+} &> /dev/null
+
+# Perform math of memory usage
+TOTAL_NO_SHARE_MEM_USAGE=0;
+TOTAL_SHARE_SIZE=0;
+TOTAL_GOOSE_SIZE=0;
+
+LIB_O=(`cat $TPATH/lib_occurance.txt`)
+cat $TPATH/lib_occurance.txt | while read l
+do
+	#Extract Info
+	#echo "LINE:$l"
+
+	#Get library path
+	LIB_N="$( cut -d' ' -f 1 <<< "$l" )"
+	
+	#Get # of usagges across all process
+	OCCUR="$( cut -d' ' -f 3 <<< "$l" )"
+
+	#get Library size
+	CURR_LIB_SZ=$( ls -l $LIB_N | cut -d' ' -f 5)
+	#echo "LIB[$LIB_N] C[$OCCUR] SZ[$CURR_LIB_SZ]"
+
+	#Perform math
+	#CURR_G_SZ=$(echo 1.66*$CURR_LIB_SZ | bc )
+	#TOTAL_GOOSE_SIZE=$(echo $TOTAL_GOOSE_SIZE+$CURR_G_SZ  | bc )
+
+	TOTAL_SHARE_SIZE=$(( $TOTAL_SHARE_SIZE + $CURR_LIB_SZ ))
+	echo "TOTAL_SHARE_SIZE:		$TOTAL_SHARE_SIZE"
+
+	CURR_NO_SHARE=$(( $CURR_LIB_SZ * $OCCUR ))
+	#echo "CURR NO SHARE:$CURR_NO_SHARE"
+
+	TOTAL_NO_SHARE_MEM_USAGE=$(( $TOTAL_NO_SHARE_MEM_USAGE + $CURR_NO_SHARE ))
+	echo "TOTAL CURR NO SHARE:	$TOTAL_NO_SHARE_MEM_USAGE"
+done
+# IT SEEMS THAT WHILE LOOP MAKES BASH VARIABLES LOCAL AND DOES NOT UPDATE OUTSIDE OF LOOP
+# LIKE FOR-LOOP
+
+#echo "---- FINAL TALLY---"
+#echo "Total MEM_USAGE NO SHARING:$TOTAL_NO_SHARE_MEM_USAGE"
+#echo "Total Vanilla Shared Size :$TOTAL_SHARE_SIZE"
+#echo "Total Goose Shared Size   :$TOTAL_SHAR_SIZE"
+#echo "Total Memory Savings      :$MEM_SAVINGS"
 echo "-------------------"
 
 # Trim Lib file some more
