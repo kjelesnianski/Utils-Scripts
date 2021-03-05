@@ -22,7 +22,11 @@
 #
 #
 #
-#
+# gnuplot needs file in form of (Ordered by occurance, most to least)
+# [ Entry# LibName Occurances OrigFileSize ]
+# To then update the dat file to be
+# [ Entry# LibName Occurance OrigFileSize MarduFileSize MemSavings ]
+# where MemSavings = (OrigFileSize*OCcurance)-MarduFileSize
 #
 # NOTE: NOT ALL LEA instructions use %RIP!!!! Those are NOT PC-relative!
 #
@@ -187,10 +191,11 @@ echo "-------------------"
 echo "--- Specific Library statistics"
 
 # Records occurance of each lib
+#END{ for ( name in count ) { print name " appears " count[ name ] " times" };
 {
 awk 'NF{ count[ $0 ]++}
-    END{ for ( name in count ) { print name " appears " count[ name ] " times" };
-}' $TPATH/allLIBS.txt | sort | tee $TPATH/lib_occurance.txt
+    END{ for ( name in count ) { print count[ name ] " " name };
+}' $TPATH/allLIBS.txt | sort -r -n | tee $TPATH/lib_occurance.txt
 } &> /dev/null
 
 # Perform math of memory usage
