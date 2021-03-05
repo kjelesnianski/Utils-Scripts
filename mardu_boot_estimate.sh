@@ -208,21 +208,30 @@ S2=(`cat $TPATH/lib_occurance.txt`)
 C=0
 cat $TPATH/lib_occurance.txt | while read l
 do
-	echo $i
 	CURR_LIB_O="$( cut -d' ' -f 1 <<< "$l" )"
-	echo "Occur:$CURR_LIB_O"
+	#echo "Occur:$CURR_LIB_O"
 
 	CURR_LIB_N="$( cut -d' ' -f 2 <<< "$l" )"
-	echo "Name:$CURR_LIB_N"
+	#echo "Name:$CURR_LIB_N"
 
 	CURR_LIB_S=$( ls -l $CURR_LIB_N | cut -d' ' -f 5)
-	echo "Size:$CURR_LIB_S"
-	
-	CURR_MARDU_LIB_S=$(echo 1.66*$CURR_LIB_S | bc )
-	CURR_NO_SHARE_LIB_S=$(( $CURR_LIB_S * $CURR_LIB_O ))
-	CURR_SAVINGS_S=$(echo $CURR_NO_SHARE_LIB_S - $CURR_MARDU_LIB_S | bc )
+	#echo "Size:$CURR_LIB_S"
 
-	echo "$C $CURR_LIB_O $CURR_LIB_N $CURR_LIB_S $CURR_MARDU_LIB_S $CURR_NO_SHARE_LIB_S $CURR_SAVINGS_S" \
+	# Now produces Kb size of lib
+	# Megabyte is too small for Bash math (reduces to 0)
+	CURR_MARDU_LIB_S=$(echo 1.66*$CURR_LIB_S | bc )
+	#echo "Mardu Size(b):$CURR_MARDU_LIB_S"
+	CURR_MARDU_LIB_S_KB=$(echo $CURR_MARDU_LIB_S / 1000 | bc )
+	#echo "Mardu Size(Kb):$CURR_MARDU_LIB_S_KB"
+
+	CURR_NO_SHARE_LIB_S=$(( $CURR_LIB_S * $CURR_LIB_O ))
+	#echo "NoShare Size(b):$CURR_NO_SHARE_LIB_S"
+	CURR_NO_SHARE_LIB_S_KB=$(( $CURR_NO_SHARE_LIB_S / 1000))
+	#echo "NoShare Size(Kb):$CURR_NO_SHARE_LIB_S_KB"
+	
+	CURR_SAVINGS_S=$(echo $CURR_NO_SHARE_LIB_S_KB - $CURR_MARDU_LIB_S_KB | bc )
+
+	echo "$C $CURR_LIB_O $CURR_LIB_N $CURR_LIB_S $CURR_MARDU_LIB_S_KB $CURR_NO_SHARE_LIB_S_KB $CURR_SAVINGS_S" \
 	       | tee -a $TPATH/lib_usage_cdf.dat 
 
 	C=$(( $C + 1 ))
