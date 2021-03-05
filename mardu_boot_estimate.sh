@@ -189,7 +189,9 @@ echo "- Got all unique LIB per PID"
 
 echo "-------------------"
 echo "--- Specific Library statistics"
+# [ Entry# Occurances LibName OrigFileSize ]
 
+# Step 1
 # Records occurance of each lib
 #END{ for ( name in count ) { print name " appears " count[ name ] " times" };
 {
@@ -197,6 +199,43 @@ awk 'NF{ count[ $0 ]++}
     END{ for ( name in count ) { print count[ name ] " " name };
 }' $TPATH/allLIBS.txt | sort -r -n | tee $TPATH/lib_occurance.txt
 } &> /dev/null
+# [ Occurance LibName ] 
+
+# Step 2
+# Overwrites with Additional FileSize info
+S2=(`cat $TPATH/lib_occurance.txt`)
+
+C=0
+cat $TPATH/lib_occurance.txt | while read l
+do
+	echo $i
+	CURR_LIB_O="$( cut -d' ' -f 1 <<< "$l" )"
+	echo "Occur:$CURR_LIB_O"
+
+	CURR_LIB_N="$( cut -d' ' -f 2 <<< "$l" )"
+	echo "Name:$CURR_LIB_N"
+
+	CURR_LIB_S=$( ls -l $CURR_LIB_N | cut -d' ' -f 5)
+	echo "Size:$CURR_LIB_S"
+	
+	CURR_MARDU_LIB_S=$(echo 1.66*$CURR_LIB_S | bc )
+	CURR_NO_SHARE_LIB_S=$(( $CURR_LIB_S * $CURR_LIB_O ))
+	CURR_SAVINGS_S=$(echo $CURR_NO_SHARE_LIB_S - $CURR_MARDU_LIB_S | bc )
+
+	echo "$C $CURR_LIB_O $CURR_LIB_N $CURR_LIB_S $CURR_MARDU_LIB_S $CURR_NO_SHARE_LIB_S $CURR_SAVINGS_S" \
+	       | tee -a $TPATH/lib_usage_cdf.dat 
+
+	C=$(( $C + 1 ))
+done
+# [ Occurance LibName OrigFileSize MarduFileSize MemSavings ]
+# MemSavings = (OrigFileSize*OCcurance)-MarduFileSize
+
+
+# [ Entry# Occurance LibName OrigFileSize MarduFileSize MemSavings ]
+
+
+
+
 
 # Perform math of memory usage
 TOTAL_NO_SHARE_MEM_USAGE=0;
