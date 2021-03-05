@@ -210,10 +210,10 @@ do
 	#echo "LINE:$l"
 
 	#Get library path
-	LIB_N="$( cut -d' ' -f 1 <<< "$l" )"
+	LIB_N="$( cut -d' ' -f 2 <<< "$l" )"
 	
 	#Get # of usagges across all process
-	OCCUR="$( cut -d' ' -f 3 <<< "$l" )"
+	OCCUR="$( cut -d' ' -f 1 <<< "$l" )"
 
 	#get Library size
 	CURR_LIB_SZ=$( ls -l $LIB_N | cut -d' ' -f 5)
@@ -224,13 +224,13 @@ do
 	#TOTAL_GOOSE_SIZE=$(echo $TOTAL_GOOSE_SIZE+$CURR_G_SZ  | bc )
 
 	TOTAL_SHARE_SIZE=$(( $TOTAL_SHARE_SIZE + $CURR_LIB_SZ ))
-	echo "TOTAL_SHARE_SIZE:		$TOTAL_SHARE_SIZE"
+	#echo "TOTAL_SHARE_SIZE:		$TOTAL_SHARE_SIZE"
 
 	CURR_NO_SHARE=$(( $CURR_LIB_SZ * $OCCUR ))
 	#echo "CURR NO SHARE:$CURR_NO_SHARE"
 
 	TOTAL_NO_SHARE_MEM_USAGE=$(( $TOTAL_NO_SHARE_MEM_USAGE + $CURR_NO_SHARE ))
-	echo "TOTAL CURR NO SHARE:	$TOTAL_NO_SHARE_MEM_USAGE"
+	#echo "TOTAL CURR NO SHARE:	$TOTAL_NO_SHARE_MEM_USAGE"
 done
 # IT SEEMS THAT WHILE LOOP MAKES BASH VARIABLES LOCAL AND DOES NOT UPDATE OUTSIDE OF LOOP
 # LIKE FOR-LOOP
