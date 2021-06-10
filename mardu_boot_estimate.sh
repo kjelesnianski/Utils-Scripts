@@ -411,9 +411,9 @@ FIXUP_COST=0.0000026
 LIB_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP_LIB | bc)
 APP_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP_APP | bc)
 TOTAL_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP | bc)
-echo "Total randomization delay 	:$LIB_TOTAL_RANDOMIZATION_DELAY seconds"
-echo "Total randomization delay 	:$APP_TOTAL_RANDOMIZATION_DELAY seconds"
-echo "Total randomization delay 	:$TOTAL_RANDOMIZATION_DELAY seconds"
+echo "LIB randomization delay 	:$LIB_RANDOMIZATION_DELAY seconds"
+echo "APP randomization delay	:$APP_RANDOMIZATION_DELAY seconds"
+echo "Total randomization delay	:$TOTAL_RANDOMIZATION_DELAY seconds"
 
 
 # Below is pseudo block comment END
