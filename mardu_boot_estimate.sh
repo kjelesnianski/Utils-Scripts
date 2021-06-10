@@ -5,8 +5,7 @@
 # Version 1: Grab all libraries from all active processes on vanilla
 #	machine
 #
-# NOTE: This script MUST be run with sudo (some operations require
-# sudo)
+# NOTE: This script MUST be run with sudo (some operations require sudo)
 # How to use cut https://stackabuse.com/substrings-in-bash/
 # How to use find https://www.cyberciti.biz/faq/bash-foreach-loop-examples-for-linux-unix/
 # https://stackoverflow.com/questions/971162/how-to-initialize-a-bash-array-with-output-piped-from-another-command/34224575
@@ -18,9 +17,7 @@
 # About doing math in bash: https://unix.stackexchange.com/questions/55069/how-to-add-arithmetic-variables-in-a-scripit
 # About counting occurance: https://stackoverflow.com/questions/8969879/count-the-occurrence-of-a-string-in-an-input-file
 # About variable recycling: https://unix.stackexchange.com/questions/312280/split-string-by-delimiter-and-get-n-th-element
-#
-#
-#
+#################################################
 #
 # gnuplot needs file in form of (Ordered by occurance, most to least)
 # [ Entry# LibName Occurances OrigFileSize ]
@@ -180,8 +177,8 @@ do
 
 	if [[ $CURR_PID_W_LIB -gt 0 ]]
 	then
-		echo $i; 
-		echo "LIBS with this PID:$CURR_PID_W_LIB"
+		#echo $i; 
+		#echo "LIBS with this PID:$CURR_PID_W_LIB"
 		LIB_COUNT=$(( $LIB_COUNT + $CURR_PID_W_LIB ))
 		PID_W_LIB_COUNT=$(( $PID_W_LIB_COUNT + 1 ))
 	fi
@@ -190,10 +187,15 @@ do
 	CURR_PID_BIN_NAME=$(readlink $i/exe)
 	if [[ ! -z "$CURR_PID_BIN_NAME" ]]
 	then
-		echo "PID BINARY $CURR_PID_BIN_NAME"
+		echo "BINARY $CURR_PID_BIN_NAME"
+
+		#record current exe binary path to file
+		{
+		readlink $i/exe | tee -a $TPATH/allACTIVEBIN.txt
+		} &> /dev/null
 
 		CURR_APP_F_COUNT=$(readelf -s $CURR_PID_BIN_NAME | awk '/FUNC/' | grep -v "UND" | wc -l)
-		echo "CUR Program Function count:$CURR_APP_F_COUNT"
+		#echo "CUR Program Function count:$CURR_APP_F_COUNT"
 		# Add symbol count to running counter
 		APP_F_COUNTER=$(($APP_F_COUNTER + $CURR_APP_F_COUNT))
 		#echo "UPDATE:$APP_F_COUNTER"
@@ -215,7 +217,6 @@ do
 		# Part 4 - update counter of application backed by binary
 		APP_PID_W_BIN_COUNT=$(( $APP_PID_W_BIN_COUNT + 1 ))
 	fi
-
 done
 
 ##### ACTIVE PROCESS LIB STATISTICS
@@ -262,19 +263,19 @@ do
 	#echo "Name:$CURR_LIB_N"
 
 	CURR_LIB_S=$( ls -l $CURR_LIB_N | cut -d' ' -f 5)
-	echo "Vanilla Size(b):$CURR_LIB_S"
+	#echo "Vanilla Size(b):$CURR_LIB_S"
 	CURR_LIB_S_KB=$(echo $CURR_LIB_S / 1000 | bc )
 	#echo "Vanilla Size(Kb):$CURR_LIB_S_KB"
 
 	# Now produces Kb size of lib
 	# Megabyte is too small for Bash math (reduces to 0)
 	CURR_MARDU_LIB_S=$(echo 1.66*$CURR_LIB_S | bc )
-	echo "Mardu Size(b):$CURR_MARDU_LIB_S"
+	#echo "Mardu Size(b):$CURR_MARDU_LIB_S"
 	CURR_MARDU_LIB_S_KB=$(echo $CURR_MARDU_LIB_S / 1000 | bc )
 	#echo "Mardu Size(Kb):$CURR_MARDU_LIB_S_KB"
 
 	CURR_NO_SHARE_LIB_S=$(( $CURR_LIB_S * $CURR_LIB_O ))
-	echo "NoShare Size(b):$CURR_NO_SHARE_LIB_S"
+	#echo "NoShare Size(b):$CURR_NO_SHARE_LIB_S"
 	CURR_NO_SHARE_LIB_S_KB=$(( $CURR_NO_SHARE_LIB_S / 1000))
 	#echo "NoShare Size(Kb):$CURR_NO_SHARE_LIB_S_KB"
 	
@@ -287,13 +288,7 @@ do
 done
 # [ Occurance LibName OrigFileSize MarduFileSize MemSavings ]
 # MemSavings = (OrigFileSize*OCcurance)-MarduFileSize
-
-
 # [ Entry# Occurance LibName OrigFileSize MarduFileSize MemSavings ]
-
-
-
-
 
 # Perform math of memory usage
 TOTAL_NO_SHARE_MEM_USAGE=0;
@@ -309,7 +304,7 @@ do
 	#Get library path
 	LIB_N="$( cut -d' ' -f 2 <<< "$l" )"
 	
-	#Get # of usagges across all process
+	#Get # of usages across all process
 	OCCUR="$( cut -d' ' -f 1 <<< "$l" )"
 
 	#get Library size
@@ -353,6 +348,7 @@ echo "- Got all unique LIB"
 
 # Below is pseudo block comment START
 #: <<'END'
+echo "Calculate Shared Memory size"
 
 UNIQUE_LIBS=(`cat $TPATH/allLIBS_2.txt`)
 for i in "${UNIQUE_LIBS[@]}"
@@ -389,11 +385,27 @@ done
 
 P_COUNTER=$(cat $TPATH/allPID.txt | wc -l)
 L_COUNTER=$(cat $TPATH/allLIBS_2.txt | wc -l)
-echo "Total Process  Count:$P_COUNTER"
-echo "Total Library  Count:$L_COUNTER"
-echo "Total Function Count:$F_COUNTER"
-echo "Total Callsite Count:$C_COUNTER"
-echo "Total PC Relative Instr Count:$PC_REL_COUNTER"
+echo ""
+echo "Total Process Count		:$P_COUNTER"
+echo "Total Library Count		:$L_COUNTER"
+echo "Total Function Count		:$F_COUNTER"
+echo "Total Callsite Count		:$C_COUNTER"
+echo "Total PC Relative Instr Count	:$PC_REL_COUNTER"
+echo ""
+
+### SYSTEM-WIDE PERFORMANCE ESTIMATION
+# Total # Fixups = #Functions + (#Callsites*3) + #PC_REL_INSTRUCTIONS
+TOTAL_NUM_FIXUP_LIB=$(( $F_COUNTER + (3*$C_COUNTER) + $PC_REL_COUNTER ))
+echo "Total num fixup LIB		:$TOTAL_NUM_FIXUP_LIB"
+TOTAL_NUM_FIXUP_APP=$(( $APP_F_COUNTER + (3*$APP_C_COUNTER) + $APP_PC_REL_COUNTER ))
+echo "Total num fixup APP		:$TOTAL_NUM_FIXUP_LIB"
+TOTAL_NUM_FIXUP=$(( $TOTAL_NUM_FIXUP_LIB + $TOTAL_NUM_FIXUP_APP ))
+echo "Total Total num fixup		:$TOTAL_NUM_FIXUP"
+
+# A fixup costs 2.6usec = 0.0000026sec
+TOTAL_RANDOMIZATION_DELAY=$(( 0.0000026 * $TOTAL_NUM_FIXUP))
+echo "Total randomization delay 	:$TOTAL_RANDOMIZATION_DELAY"
+
 
 # Below is pseudo block comment END
 #END
