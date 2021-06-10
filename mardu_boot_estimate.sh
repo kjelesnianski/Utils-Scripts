@@ -33,7 +33,7 @@
 #
 # Author: K Jski
 # Email : kjski@vt.edu
-# Date  : 2/25/21
+# Date  : 6/10/21
 #####################################################################
 #!/bin/bash
 TPATH=/home/kjelesnianski/Utils-Scripts
@@ -75,7 +75,7 @@ echo "------- PART 1A systemd counters"
 systemd_arary=(`cat $TPATH/systemd-libs.txt`)
 for i in "${systemd_arary[@]}"
 do
-	# echo the LIB name
+	# Print the LIB name
 	#echo $i ;
 
 	# PART 1
@@ -170,12 +170,20 @@ do
 
 	CURR_PID_W_LIB=$(cat $i/maps | cut -d' ' -f 26 | awk NF | grep "\.so" | awk '!seen[$0]++' \
 		| wc -l)
+
 	if [[ $CURR_PID_W_LIB -gt 0 ]]
 	then
-		#echo $i; 
-		#echo "LIBS with this PID:$CURR_PID_W_LIB"
+		echo $i; 
+		echo "LIBS with this PID:$CURR_PID_W_LIB"
 		LIB_COUNT=$(( $LIB_COUNT + $CURR_PID_W_LIB ))
 		PID_W_LIB_COUNT=$(( $PID_W_LIB_COUNT + 1 ))
+	fi
+
+	#echo the PID executable name
+	CURR_PID_BIN_NAME=$(readlink $i/exe)
+	if [[ ! -z "$CURR_PID_BIN_NAME" ]]
+	then
+		echo "PID BINARY $CURR_PID_BIN_NAME"
 	fi
 
 done
