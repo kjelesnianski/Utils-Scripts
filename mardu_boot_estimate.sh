@@ -388,9 +388,13 @@ L_COUNTER=$(cat $TPATH/allLIBS_2.txt | wc -l)
 echo ""
 echo "Total Process Count		:$P_COUNTER"
 echo "Total Library Count		:$L_COUNTER"
-echo "Total Function Count		:$F_COUNTER"
-echo "Total Callsite Count		:$C_COUNTER"
-echo "Total PC Relative Instr Count	:$PC_REL_COUNTER"
+echo "Total Library Function Count	:$F_COUNTER"
+echo "Total Library Callsite Count	:$C_COUNTER"
+echo "Total Library PC Rel Instr Count	:$PC_REL_COUNTER"
+echo ""
+echo "Total Active Application Function count	:$APP_F_COUNTER"
+echo "Total Active Application Callsite Count	:$APP_C_COUNTER"
+echo "Total Active Application PC Rel Instr Count:$APP_PC_REL_COUNTER"
 echo ""
 
 ### SYSTEM-WIDE PERFORMANCE ESTIMATION
@@ -398,13 +402,18 @@ echo ""
 TOTAL_NUM_FIXUP_LIB=$(( $F_COUNTER + (3*$C_COUNTER) + $PC_REL_COUNTER ))
 echo "Total num fixup LIB		:$TOTAL_NUM_FIXUP_LIB"
 TOTAL_NUM_FIXUP_APP=$(( $APP_F_COUNTER + (3*$APP_C_COUNTER) + $APP_PC_REL_COUNTER ))
-echo "Total num fixup APP		:$TOTAL_NUM_FIXUP_LIB"
+echo "Total num fixup APP		:$TOTAL_NUM_FIXUP_APP"
 TOTAL_NUM_FIXUP=$(( $TOTAL_NUM_FIXUP_LIB + $TOTAL_NUM_FIXUP_APP ))
 echo "Total Total num fixup		:$TOTAL_NUM_FIXUP"
 
 # A fixup costs 2.6usec = 0.0000026sec
-TOTAL_RANDOMIZATION_DELAY=$(( 0.0000026 * $TOTAL_NUM_FIXUP))
-echo "Total randomization delay 	:$TOTAL_RANDOMIZATION_DELAY"
+FIXUP_COST=0.0000026
+LIB_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP_LIB | bc)
+APP_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP_APP | bc)
+TOTAL_RANDOMIZATION_DELAY=$(echo $FIXUP_COST*$TOTAL_NUM_FIXUP | bc)
+echo "Total randomization delay 	:$LIB_TOTAL_RANDOMIZATION_DELAY seconds"
+echo "Total randomization delay 	:$APP_TOTAL_RANDOMIZATION_DELAY seconds"
+echo "Total randomization delay 	:$TOTAL_RANDOMIZATION_DELAY seconds"
 
 
 # Below is pseudo block comment END
