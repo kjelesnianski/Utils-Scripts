@@ -101,7 +101,7 @@ do
 	C_COUNTER=$(($C_COUNTER + $CURR_C_COUNTER))
 
 	# Part 3 - PC relative asm counter
-	CURR_PCR_COUNTER=$(objdump -d $i | awk '/\%rip/' | wc -l)
+	CURR_PCR_COUNTER=$(objdump -d $i | awk '/%rip/' | wc -l)
 	PC_REL_COUNTER=$(($PC_REL_COUNTER + $CURR_PCR_COUNTER))
 	# Part 3A - LEA only asm counter
 	#LEA_COUNTER=0;
@@ -215,17 +215,19 @@ do
 	#echo "Name:$CURR_LIB_N"
 
 	CURR_LIB_S=$( ls -l $CURR_LIB_N | cut -d' ' -f 5)
-	#echo "Size:$CURR_LIB_S"
+	echo "Vanilla Size(b):$CURR_LIB_S"
+	CURR_LIB_S_KB=$(echo $CURR_LIB_S / 1000 | bc )
+	#echo "Vanilla Size(Kb):$CURR_LIB_S_KB"
 
 	# Now produces Kb size of lib
 	# Megabyte is too small for Bash math (reduces to 0)
 	CURR_MARDU_LIB_S=$(echo 1.66*$CURR_LIB_S | bc )
-	#echo "Mardu Size(b):$CURR_MARDU_LIB_S"
+	echo "Mardu Size(b):$CURR_MARDU_LIB_S"
 	CURR_MARDU_LIB_S_KB=$(echo $CURR_MARDU_LIB_S / 1000 | bc )
 	#echo "Mardu Size(Kb):$CURR_MARDU_LIB_S_KB"
 
 	CURR_NO_SHARE_LIB_S=$(( $CURR_LIB_S * $CURR_LIB_O ))
-	#echo "NoShare Size(b):$CURR_NO_SHARE_LIB_S"
+	echo "NoShare Size(b):$CURR_NO_SHARE_LIB_S"
 	CURR_NO_SHARE_LIB_S_KB=$(( $CURR_NO_SHARE_LIB_S / 1000))
 	#echo "NoShare Size(Kb):$CURR_NO_SHARE_LIB_S_KB"
 	
@@ -334,7 +336,7 @@ do
 	C_COUNTER=$(($C_COUNTER + $CURR_C_COUNTER))
 
 	# Part 3 - PC relative asm counter
-	CURR_PCR_COUNTER=$(objdump -d $i | awk '/\%rip/' | wc -l)
+	CURR_PCR_COUNTER=$(objdump -d $i | awk '/%rip/' | wc -l)
 	PC_REL_COUNTER=$(($PC_REL_COUNTER + $CURR_PCR_COUNTER))
 done
 
