@@ -150,6 +150,13 @@ echo "- Got all PID"
 PID_W_LIB_COUNT=0;
 LIB_COUNT=0;
 
+## Active Process counts
+APP_PID_W_BIN_COUNT=0;
+APP_F_COUNTER=0;
+AAP_C_COUNTER=0;
+APP_PC_REL_COUNTER=0;
+
+
 # For each PID
 ARRAY=(`cat $TPATH/allPID.txt`)
 for i in "${ARRAY[@]}"
@@ -184,14 +191,46 @@ do
 	if [[ ! -z "$CURR_PID_BIN_NAME" ]]
 	then
 		echo "PID BINARY $CURR_PID_BIN_NAME"
+
+		CURR_APP_F_COUNT=$(readelf -s $CURR_PID_BIN_NAME | awk '/FUNC/' | grep -v "UND" | wc -l)
+		echo "CUR Program Function count:$CURR_APP_F_COUNT"
+		# Add symbol count to running counter
+		APP_F_COUNTER=$(($APP_F_COUNTER + $CURR_APP_F_COUNT))
+		#echo "UPDATE:$APP_F_COUNTER"
+
+		# PART 2
+		# - At same time get number of call asm per active application
+		# objdump -d
+		# | get only lines with 'callq'
+		# | count lines
+		# | save to variable
+		APP_CURR_C_COUNTER=$(objdump -d $CURR_PID_BIN_NAME | awk '/callq/' | wc -l)
+		# add to running counter
+		APP_C_COUNTER=$(($APP_C_COUNTER + $APP_CURR_C_COUNTER))
+
+		# Part 3 - PC relative asm counter
+		APP_CURR_PCR_COUNTER=$(objdump -d $CURR_PID_BIN_NAME | awk '/%rip/' | wc -l)
+		APP_PC_REL_COUNTER=$(($APP_PC_REL_COUNTER + $APP_CURR_PCR_COUNTER))
+
+		# Part 4 - update counter of application backed by binary
+		APP_PID_W_BIN_COUNT=$(( $APP_PID_W_BIN_COUNT + 1 ))
 	fi
 
 done
 
+##### ACTIVE PROCESS LIB STATISTICS
 echo "Total number of Libs attached to PIDs	:$LIB_COUNT"
 echo "Number of PIDs with LIBS			:$PID_W_LIB_COUNT"
 echo ""
 echo "- Got all unique LIB per PID"
+
+##### ACTIVE PROCESS APP STATISTICS
+echo ""
+echo "Total number of PIDs			:$APP_PID_W_BIN_COUNT"
+echo "Total Active Application Function count	:$APP_F_COUNTER"
+echo "Total Active Application Callsite Count	:$APP_C_COUNTER"
+echo "Total Active Application PC Relative Instr Count:$APP_PC_REL_COUNTER"
+echo ""
 
 
 
