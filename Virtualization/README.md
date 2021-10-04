@@ -7,7 +7,7 @@ updating the script to point to your kernel source KNL_SRC
 
 Another useful resource:
 https://www.youtube.com/watch?v=AAfFewePE7c
-
+https://bmeneg.com/post/kernel-debugging-with-qemu/
 
 Running with QEMU ----------------------------------------------
 
